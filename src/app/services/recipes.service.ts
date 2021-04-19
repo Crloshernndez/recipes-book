@@ -1,4 +1,5 @@
 import { Injectable, EventEmitter } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { Recipe } from '../recipes/recipe.model';
 import { Ingredient } from '../share/ingredient.model';
@@ -12,7 +13,6 @@ export class RecipesService {
 
   private recipes: Recipe[] = [
     new Recipe(
-      2,
       'another test',
       'this is another test',
       'https://d1kxxrc2vqy8oa.cloudfront.net/wp-content/uploads/2020/01/07142059/RFB-1912-3-cachitovegano.jpg',
@@ -23,7 +23,6 @@ export class RecipesService {
       ]
     ),
     new Recipe(
-      1,
       'A test recipe',
       'This is a test',
       'https://www.elvenezolanocolombia.com/wp-content/uploads/hallaca.jpg',
@@ -34,20 +33,33 @@ export class RecipesService {
       ]
     ),
   ];
-  constructor(private shoppingLS: ShoppingListService) {}
+  constructor(
+    private shoppingLS: ShoppingListService,
+    private router: Router
+  ) {}
 
   getRecipes() {
-    return this.recipes.slice();
+    return this.recipes;
   }
 
-  getRecipeById(id: number) {
-    const recipe = this.recipes.find((r) => {
-      return r.id === id;
-    });
-    return recipe;
+  getRecipeById(index: number) {
+    return this.recipes[index];
+  }
+
+  addRecipe(recipe: Recipe) {
+    this.recipes.push(recipe);
+  }
+
+  updateRecipe(index: number, newRecipe: Recipe) {
+    this.recipes[index] = newRecipe;
   }
 
   addIngredientsToShoppingList(ingredients: Ingredient[]) {
     this.shoppingLS.addIngredients(ingredients);
+  }
+
+  deleteRecipe(index: number) {
+    this.recipes.splice(index, 1);
+    this.router.navigate(['/recipes']);
   }
 }

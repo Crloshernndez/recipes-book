@@ -11,6 +11,7 @@ import { RecipesService } from '../../services/recipes.service';
 })
 export class RecipeDetailComponent implements OnInit {
   recipeDetails: Recipe;
+  indexRecipe: number;
 
   constructor(
     private recipeService: RecipesService,
@@ -27,5 +28,9 @@ export class RecipeDetailComponent implements OnInit {
     this.recipeService.addIngredientsToShoppingList(
       this.recipeDetails.ingredients
     );
+  }
+
+  onDelete() {
+    this.recipeService.deleteRecipe(+this.route.snapshot.params['id']);
   }
 }
