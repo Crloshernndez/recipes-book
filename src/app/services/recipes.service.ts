@@ -4,39 +4,46 @@ import { Router } from '@angular/router';
 import { Recipe } from '../recipes/recipe.model';
 import { Ingredient } from '../share/ingredient.model';
 import { ShoppingListService } from './shopping-list.service';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class RecipesService {
   selectedRecipe = new EventEmitter<Recipe>();
+  recipeChanged = new Subject<Recipe[]>();
 
-  private recipes: Recipe[] = [
-    new Recipe(
-      'another test',
-      'this is another test',
-      'https://d1kxxrc2vqy8oa.cloudfront.net/wp-content/uploads/2020/01/07142059/RFB-1912-3-cachitovegano.jpg',
-      [
-        new Ingredient('harina', 1),
-        new Ingredient('leche', 5),
-        new Ingredient('jamon', 1),
-      ]
-    ),
-    new Recipe(
-      'A test recipe',
-      'This is a test',
-      'https://www.elvenezolanocolombia.com/wp-content/uploads/hallaca.jpg',
-      [
-        new Ingredient('harina', 1),
-        new Ingredient('carne', 5),
-        new Ingredient('hojas', 1),
-      ]
-    ),
+  private recipes = [
+    // new Recipe(
+    //   'another test',
+    //   'this is another test',
+    //   'https://d1kxxrc2vqy8oa.cloudfront.net/wp-content/uploads/2020/01/07142059/RFB-1912-3-cachitovegano.jpg',
+    //   [
+    //     new Ingredient('harina', 1),
+    //     new Ingredient('leche', 5),
+    //     new Ingredient('jamon', 1),
+    //   ]
+    // ),
+    // new Recipe(
+    //   'A test recipe',
+    //   'This is a test',
+    //   'https://www.elvenezolanocolombia.com/wp-content/uploads/hallaca.jpg',
+    //   [
+    //     new Ingredient('harina', 1),
+    //     new Ingredient('carne', 5),
+    //     new Ingredient('hojas', 1),
+    //   ]
+    // ),
   ];
   constructor(
     private shoppingLS: ShoppingListService,
     private router: Router
   ) {}
+
+  setRecipes(recipe: Recipe[]) {
+    this.recipes = recipe;
+    this.recipeChanged.next(this.recipes);
+  }
 
   getRecipes() {
     return this.recipes;

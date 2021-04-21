@@ -6,6 +6,8 @@ import { RecipeDetailComponent } from './recipes/recipe-detail/recipe-detail.com
 import { RecipeStartComponent } from './recipes/recipe-start/recipe-start.component';
 import { RecipeEditComponent } from './recipes/recipe-edit/recipe-edit.component';
 import { ErrorPageComponent } from './error-page/error-page.component';
+import { RecipeResolverService } from './services/recipe.resolver.service';
+import { AuthFormComponent } from './auth/auth-form/auth-form.component';
 
 const appRoutes: Routes = [
   {
@@ -28,16 +30,22 @@ const appRoutes: Routes = [
       {
         path: ':id',
         component: RecipeDetailComponent,
+        resolve: [RecipeResolverService],
       },
       {
         path: ':id/edit',
         component: RecipeEditComponent,
+        resolve: [RecipeResolverService],
       },
     ],
   },
   {
     path: 'shopping-list',
     component: ShoppingListComponent,
+  },
+  {
+    path: 'auth',
+    component: AuthFormComponent,
   },
   {
     path: '**',
