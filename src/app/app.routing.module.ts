@@ -8,6 +8,7 @@ import { RecipeEditComponent } from './recipes/recipe-edit/recipe-edit.component
 import { ErrorPageComponent } from './error-page/error-page.component';
 import { RecipeResolverService } from './services/recipe.resolver.service';
 import { AuthFormComponent } from './auth/auth-form/auth-form.component';
+import { AuthGuardService } from './auth/auth.guard.service';
 
 const appRoutes: Routes = [
   {
@@ -18,6 +19,7 @@ const appRoutes: Routes = [
   {
     path: 'recipes',
     component: RecipesComponent,
+    canActivate: [AuthGuardService],
     children: [
       {
         path: '',

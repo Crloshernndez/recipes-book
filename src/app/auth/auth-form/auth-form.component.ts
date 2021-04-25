@@ -1,5 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
+import { Router } from '@angular/router';
+
+import {
+  AuthenticationService,
+  authResponseData,
+} from '../authentication.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-auth-form',
@@ -8,7 +15,12 @@ import { NgForm } from '@angular/forms';
 })
 export class AuthFormComponent implements OnInit {
   isLoginMode: boolean = false;
-  constructor() {}
+  isLoading = false;
+  error: string = null;
+  constructor(
+    private authenticationService: AuthenticationService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {}
 
@@ -17,7 +29,35 @@ export class AuthFormComponent implements OnInit {
   }
 
   onSubmit(authForm: NgForm) {
-    console.log(authForm);
+    if (!authForm.valid) {
+      return;
+    }
+    const email = authForm.value.email;
+    const password = authForm.value.password;
+
+    let authObs: Observable<authResponseData>;
+
+    this.isLoading = true;
+    if (this.isLoginMode) {
+      authObs = this.authenticationService.singIn(email, password);
+    } else {
+      authObs = this.authenticationService.singUp(email, password);
+    }
+    authObs.subscribe(
+      (data) => {
+        console.log(data);
+        this.isLoading = false;
+        this.router.navigate(['/recipes']);
+      },
+      //recivimos el mensaje del error
+      (errorRes) => {
+        console.log(errorRes);
+        // asignamos el mensaje a la propiedad error
+        this.error = errorRes;
+        this.isLoading = false;
+      }
+    );
+
     authForm.reset();
   }
 }
