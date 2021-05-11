@@ -1,12 +1,19 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ComponentFactoryResolver,
+  ViewChild,
+} from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 
+import { PlaceholderDirective } from '../../share/directives/placeholder.directive';
 import {
   AuthenticationService,
   authResponseData,
 } from '../authentication.service';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
+import { AlertComponent } from 'src/app/share/components/alert/alert.component';
 
 @Component({
   selector: 'app-auth-form',
@@ -17,9 +24,12 @@ export class AuthFormComponent implements OnInit {
   isLoginMode: boolean = false;
   isLoading = false;
   error: string = null;
+  closeSub: Subscription;
+  @ViewChild(PlaceholderDirective) alertHost: PlaceholderDirective;
   constructor(
     private authenticationService: AuthenticationService,
-    private router: Router
+    private router: Router,
+    private componentFactoryResolver: ComponentFactoryResolver
   ) {}
 
   ngOnInit(): void {}
@@ -53,11 +63,40 @@ export class AuthFormComponent implements OnInit {
       (errorRes) => {
         console.log(errorRes);
         // asignamos el mensaje a la propiedad error
-        this.error = errorRes;
+        // this.error = errorRes;
+        this.showErrorAlert(errorRes);
         this.isLoading = false;
       }
     );
 
     authForm.reset();
   }
+
+  handleError() {
+    this.error = null;
+  }
+
+  private showErrorAlert(message: string) {
+    const alertComponentFactory = this.componentFactoryResolver.resolveComponentFactory(
+      AlertComponent
+    );
+
+    const hostViewContainerRef = this.alertHost.viewContainerRef;
+    hostViewContainerRef.clear();
+
+    const componentRef = hostViewContainerRef.createComponent(
+      alertComponentFactory
+    );
+
+    componentRef.instance.message = message;
+
+    this.closeSub = componentRef.instance.close.subscribe(() => {
+      this.closeSub.unsubscribe();
+      hostViewContainerRef.clear();
+    });
+  }
+
+  // ngOnDestroy() {
+  //   this.closeSub.unsubscribe();
+  // }
 }
