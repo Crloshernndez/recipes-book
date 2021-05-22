@@ -6,7 +6,10 @@ import {
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
 
+import * as AppStore from '../../store/app.reducer';
+import * as FromAddActions from '../store/auth.action';
 import { PlaceholderDirective } from '../../share/directives/placeholder.directive';
 import {
   AuthenticationService,
@@ -25,14 +28,24 @@ export class AuthFormComponent implements OnInit {
   isLoading = false;
   error: string = null;
   closeSub: Subscription;
+  private storeSub: Subscription;
   @ViewChild(PlaceholderDirective) alertHost: PlaceholderDirective;
   constructor(
     private authenticationService: AuthenticationService,
     private router: Router,
-    private componentFactoryResolver: ComponentFactoryResolver
+    private componentFactoryResolver: ComponentFactoryResolver,
+    private store: Store<AppStore.appStore>
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit() {
+    this.storeSub = this.store.select('auth').subscribe((authUser) => {
+      this.error = authUser.authError;
+      this.isLoading = authUser.loading;
+      if (this.error) {
+        this.showErrorAlert(this.error);
+      }
+    });
+  }
 
   onSwitchMode() {
     this.isLoginMode = !this.isLoginMode;
@@ -45,35 +58,41 @@ export class AuthFormComponent implements OnInit {
     const email = authForm.value.email;
     const password = authForm.value.password;
 
-    let authObs: Observable<authResponseData>;
+    // let authObs: Observable<authResponseData>;
 
     this.isLoading = true;
     if (this.isLoginMode) {
-      authObs = this.authenticationService.singIn(email, password);
+      this.store.dispatch(
+        new FromAddActions.loginStart({ email: email, password: password })
+      );
+      // authObs = this.authenticationService.singIn(email, password);
     } else {
-      authObs = this.authenticationService.singUp(email, password);
+      // authObs = this.authenticationService.singUp(email, password);
+      this.store.dispatch(
+        new FromAddActions.signupStart({ email: email, password: password })
+      );
     }
-    authObs.subscribe(
-      (data) => {
-        console.log(data);
-        this.isLoading = false;
-        this.router.navigate(['/recipes']);
-      },
-      //recivimos el mensaje del error
-      (errorRes) => {
-        console.log(errorRes);
-        // asignamos el mensaje a la propiedad error
-        // this.error = errorRes;
-        this.showErrorAlert(errorRes);
-        this.isLoading = false;
-      }
-    );
+    // authObs.subscribe(
+    //   (data) => {
+    //     console.log(data);
+    //     this.isLoading = false;
+    //     this.router.navigate(['/recipes']);
+    //   },
+    //   //recivimos el mensaje del error
+    //   (errorRes) => {
+    //     console.log(errorRes);
+    //     // asignamos el mensaje a la propiedad error
+    //     // this.error = errorRes;
+    //     this.showErrorAlert(errorRes);
+    //     this.isLoading = false;
+    //   }
+    // );
 
     authForm.reset();
   }
 
   handleError() {
-    this.error = null;
+    this.store.dispatch(new FromAddActions.clearError());
   }
 
   private showErrorAlert(message: string) {
@@ -96,7 +115,8 @@ export class AuthFormComponent implements OnInit {
     });
   }
 
-  // ngOnDestroy() {
-  //   this.closeSub.unsubscribe();
-  // }
+  ngOnDestroy() {
+    this.closeSub.unsubscribe();
+    this.storeSub.unsubscribe();
+  }
 }

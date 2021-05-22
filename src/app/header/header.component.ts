@@ -1,9 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Router } from '@angular/router';
+import { map } from 'rxjs/operators';
+// import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
 
 import { DataStorageService } from '../services/data-storage.service';
-import { AuthenticationService } from '../auth/authentication.service';
+// import { AuthenticationService } from '../auth/authentication.service';
+import * as fromAppStore from '../store/app.reducer';
+import * as AuthActions from '../auth/store/auth.action';
 
 @Component({
   selector: 'app-header',
@@ -16,14 +20,22 @@ export class HeaderComponent implements OnInit, OnDestroy {
   collapsed = true;
   constructor(
     private dataStorageService: DataStorageService,
-    private authenticationService: AuthenticationService,
-    private router: Router
+    // private authenticationService: AuthenticationService,
+    // private router: Router,
+    private store: Store<fromAppStore.appStore>
   ) {}
 
   ngOnInit() {
-    this.authenticationService.user.subscribe((user) => {
-      this.isAuthenticated = !user ? false : true;
-    });
+    this.store
+      .select('auth')
+      .pipe(
+        map((authUser) => {
+          return authUser.user;
+        })
+      )
+      .subscribe((user) => {
+        this.isAuthenticated = !user ? false : true;
+      });
   }
 
   onSaveData() {
@@ -35,8 +47,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   onLogOut() {
-    this.authenticationService.logOut();
-    this.router.navigate(['/auth']);
+    this.store.dispatch(new AuthActions.logOut());
     alert('you are log out!!');
   }
 

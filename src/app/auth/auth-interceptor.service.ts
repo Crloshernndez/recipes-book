@@ -5,16 +5,24 @@ import {
   HttpRequest,
   HttpParams,
 } from '@angular/common/http';
-import { take, exhaustMap } from 'rxjs/operators';
+import { take, exhaustMap, map } from 'rxjs/operators';
+import { Store } from '@ngrx/store';
 
 import { AuthenticationService } from './authentication.service';
+import * as fromAppStore from '../store/app.reducer';
 
 @Injectable()
 export class AuthInterceptorService implements HttpInterceptor {
-  constructor(private authenticationService: AuthenticationService) {}
+  constructor(
+    // private authenticationService: AuthenticationService,
+    private store: Store<fromAppStore.appStore>
+  ) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler) {
-    return this.authenticationService.user.pipe(
+    return this.store.select('auth').pipe(
+      map((authUser) => {
+        return authUser.user;
+      }),
       take(1),
       exhaustMap((user) => {
         // si no existe un user enviamos la request sin modificarla
